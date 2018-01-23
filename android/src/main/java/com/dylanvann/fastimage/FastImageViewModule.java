@@ -18,42 +18,49 @@ import com.facebook.react.bridge.ReadableMap;
 
 class FastImageViewModule extends ReactContextBaseJavaModule {
 
-    private static final String REACT_CLASS = "FastImageView";
+private static final String REACT_CLASS = "FastImageView";
 
-    FastImageViewModule(ReactApplicationContext reactContext) {
+FastImageViewModule(ReactApplicationContext reactContext) {
         super(reactContext);
-    }
+}
 
-    @Override
-    public String getName() {
+@Override
+public String getName() {
         return REACT_CLASS;
-    }
+}
 
-    private static Drawable TRANSPARENT_DRAWABLE = new ColorDrawable(Color.TRANSPARENT);
+private static Drawable TRANSPARENT_DRAWABLE = new ColorDrawable(Color.TRANSPARENT);
 
-    @ReactMethod
-    public void preload(final ReadableArray sources) {
+@ReactMethod
+public void preload(final ReadableArray sources) {
         final Activity activity = getCurrentActivity();
         activity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                for (int i = 0; i < sources.size(); i++) {
-                    final ReadableMap source = sources.getMap(i);
-                    final GlideUrl glideUrl = FastImageViewConverter.glideUrl(source);
-                    final Priority priority = FastImageViewConverter.priority(source);
+                        @Override
+                        public void run() {
+                                for (int i = 0; i < sources.size(); i++) {
+                                        final ReadableMap source = sources.getMap(i);
+                                        final GlideUrl glideUrl = FastImageViewConverter.glideUrl(source);
+                                        final Priority priority = FastImageViewConverter.priority(source);
 
-                    RequestOptions options = new RequestOptions()
-                            .placeholder(TRANSPARENT_DRAWABLE)
-                            .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                            .priority(priority);
-
-                    Glide
-                            .with(activity.getApplicationContext())
-                            .applyDefaultRequestOptions(options)
-                            .load(glideUrl)
-                            .preload();
-                }
-            }
-        });
-    }
+                                        RequestOptions options = new RequestOptions()
+                                                                 .placeholder(TRANSPARENT_DRAWABLE)
+                                                                 .diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                                                                 .priority(priority);
+                                        if (glideUrl.toStringUrl().startsWith("http://") || glideUrl.toStringUrl().startsWith("https://")) {
+                                                Glide
+                                                .with(activity.getApplicationContext())
+                                                .applyDefaultRequestOptions(options)
+                                                .load(glideUrl)
+                                                .preload();
+                                        } else {
+                                                Glide
+                                                .with(activity.getApplicationContext())
+                                                .applyDefaultRequestOptions(options)
+                                                .load(glideUrl.toStringUrl())
+                                                .preload();
+                                        }
+                                }
+                        }
+                });
+}
 }
